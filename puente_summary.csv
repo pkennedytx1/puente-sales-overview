@@ -1,0 +1,4 @@
+scope,location,location_type,status,net_sales_usd,total_sales_usd,order_count,avg_order_value_usd,unique_customers
+lifetime_all_locations,All locations,-,-,192288.73,239136.07,19754,10.14,6242
+by_location,Puente Coffee Co.,Flagship (physical),ACTIVE,191663.18,238456.9,19674,10.15,6172
+by_location,Pop Up Coffee Stand,Mobile pilot (Sept 2024 only),INACTIVE,625.55,679.17,80,7.82,78

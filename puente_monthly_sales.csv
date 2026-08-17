@@ -1,0 +1,34 @@
+month,location,net_sales_usd,total_sales_usd,order_count,avg_order_value_usd
+2024-01,Puente Coffee Co.,989.53,1272.32,151,6.61
+2024-02,Puente Coffee Co.,4383.82,5587.66,537,8.43
+2024-03,Puente Coffee Co.,6570.48,8292.69,766,8.88
+2024-04,Puente Coffee Co.,8148.3,10183.72,922,9.16
+2024-05,Puente Coffee Co.,7465.82,9354.83,800,9.91
+2024-06,Puente Coffee Co.,8255.8,10203.37,865,10.04
+2024-07,Puente Coffee Co.,8346.0,10496.03,879,9.86
+2024-08,Puente Coffee Co.,8754.81,10864.13,896,10.13
+2024-09,Puente Coffee Co.,11439.6,14215.82,1153,10.34
+2024-10,Puente Coffee Co.,13479.58,16687.68,1372,10.13
+2024-11,Puente Coffee Co.,14830.17,18375.48,1452,10.63
+2024-12,Puente Coffee Co.,10736.98,13460.73,990,11.42
+2025-01,Puente Coffee Co.,8648.16,10632.87,857,10.54
+2025-02,Puente Coffee Co.,7983.33,9896.4,833,10.04
+2025-03,Puente Coffee Co.,11219.06,13813.54,1088,10.72
+2025-04,Puente Coffee Co.,10848.9,13528.57,1092,10.39
+2025-05,Puente Coffee Co.,8749.83,10855.34,887,10.34
+2025-06,Puente Coffee Co.,7617.55,9435.61,772,10.39
+2025-07,Puente Coffee Co.,7625.86,9418.18,773,10.28
+2025-08,Puente Coffee Co.,7494.26,9257.27,756,10.23
+2025-09,Puente Coffee Co.,6390.3,7954.08,680,9.79
+2025-10,Puente Coffee Co.,381.55,482.05,64,8.31
+2025-11,Puente Coffee Co.,0.0,0.0,0,0.0
+2025-12,Puente Coffee Co.,0.0,20.0,1,0.0
+2026-01,Puente Coffee Co.,0.0,0.0,0,0.0
+2026-02,Puente Coffee Co.,0.0,0.0,0,0.0
+2026-03,Puente Coffee Co.,0.0,0.0,0,0.0
+2026-04,Puente Coffee Co.,0.0,0.0,0,0.0
+2026-05,Puente Coffee Co.,0.5,0.58,1,0.5
+2026-06,Puente Coffee Co.,3139.6,3998.45,353,9.2
+2026-07,Puente Coffee Co.,5750.64,7154.0,520,11.21
+2026-08,Puente Coffee Co.,2412.75,3015.5,214,11.58
+2024-09,Pop Up Coffee Stand,625.55,679.17,80,7.82

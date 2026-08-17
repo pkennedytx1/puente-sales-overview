@@ -1,0 +1,21 @@
+item_name,category,net_sales_usd,units_sold
+Latte,Espresso,41731.21,6698
+Iced Latte,Espresso,35360.11,5317
+Cold Brew,Coffee,9365.28,1612
+Matcha Latte,Anti-Coffee,8879.2,1345
+Drip,Coffee,8068.51,2128
+Flat White,Espresso,7051.96,1519
+Cappuccino,Espresso,6719.38,1391
+Americano,Espresso,4856.57,941
+Chai Latte,Anti-Coffee,4475.53,665
+Iced Americano,Espresso,4036.93,841
+Iced Mocha,Espresso,3871.02,583
+Cortado,Espresso,3688.76,842
+Mocha,Espresso,2884.31,482
+Hot Chocolate,Anti-Coffee,2465.76,770
+Double Espresso,Espresso,2263.9,604
+Pumpkin Spice Latte,Monthly Specials,1344.95,198
+Pumpkin Muffins,Cake Crusader,1198.0,301
+Lagunitas - Roasted Coffee (12 oz),Roasted Coffee,1091.68,61
+Iced Pumpkin Spice Latte,Monthly Specials,991.14,137
+Muffin,Cake Crusader,904.26,225
