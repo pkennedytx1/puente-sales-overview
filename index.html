@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Puente Coffee Co. | Lifetime Sales Overview</title>
+<title>Puente Coffee Co. — Lifetime Sales Overview</title>
 <script>
 /*!
  * Chart.js v4.4.4
@@ -132,7 +132,7 @@
   table.data-table thead th { color: var(--text-muted); font-weight: 500; }
 
   /* Heatmap */
-  .heatmap { display: grid; grid-template-columns: 70px repeat(9, 1fr); gap: 2px; font-size: 11px; }
+  .heatmap { display: grid; gap: 2px; font-size: 11px; }
   .heatmap .corner { }
   .heatmap .hourlabel { text-align: center; color: var(--text-muted); padding-bottom: 4px; }
   .heatmap .daylabel { color: var(--text-secondary); display: flex; align-items: center; padding-right: 6px; }
@@ -154,17 +154,78 @@
   @media (max-width: 760px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .card-grid { grid-template-columns: 1fr; }
-    .heatmap { grid-template-columns: 50px repeat(9, 1fr); font-size: 9px; }
+    .heatmap { font-size: 9px; }
+  }
+
+  .password-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--page);
+    padding: 24px;
+  }
+  .password-gate.hidden { display: none; }
+  .password-gate-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .password-gate-card h2 { margin: 0 0 8px; font-size: 18px; }
+  .password-gate-card p { margin: 0 0 20px; color: var(--text-secondary); font-size: 14px; }
+  .password-gate-card input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--page);
+    color: var(--text-primary);
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .password-gate-card button {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--series-1);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .password-gate-error {
+    margin: 12px 0 0;
+    color: var(--series-8);
+    font-size: 13px;
+    min-height: 18px;
   }
 </style>
 </head>
 <body>
+<div id="passwordGate" class="password-gate">
+  <div class="password-gate-card">
+    <h2>Enter password</h2>
+    <p>This dashboard is password protected.</p>
+    <form id="passwordForm">
+      <input type="password" id="passwordInput" placeholder="Password" autocomplete="off" autofocus>
+      <button type="submit">Unlock</button>
+    </form>
+    <p id="passwordError" class="password-gate-error" aria-live="polite"></p>
+  </div>
+</div>
 <div class="wrap">
 
   <header>
     <div>
       <h1>Puente Coffee Co. — Lifetime Sales Overview</h1>
-      <p>Square sales data, Jan 2024 – Aug 2026 (partial) · Flagship location: 10700 Menchaca Rd, Austin, TX · Prepared for second-location investment discussion</p>
+      <p>Square sales data, Jan 2024 – Sept 2026 (partial) · Flagship location: 10700 Menchaca Rd, Austin, TX · Prepared for second-location investment discussion</p>
     </div>
     <button class="theme-toggle" onclick="toggleTheme()">Toggle theme</button>
   </header>
@@ -174,9 +235,10 @@
   <div class="callout">
     <strong>Reading note on the timeline below:</strong> Puente closed the flagship location for a change during
     Oct 2025 – May 2026 (near-zero sales in that window are the closure, not a demand drop). Trading resumed in
-    June 2026 and has ramped each month since (June $3.1K → July $5.8K → Aug $2.4K in a partial month), roughly
-    tracking the ramp seen in the original 2024 launch. Pre-closure, the flagship location grew from a ~$1K
-    opening month to a peak of ~$14.8K/month (Nov 2024) and sustained $6.4–11.2K/month through Sept 2025.
+    June 2026 and has climbed every month since (June $3.1K → July $5.8K → Aug $6.9K, a full month → Sept $4.0K
+    so far, ~12 days in) — August already back above the pre-closure Sept 2025 run rate. Pre-closure, the flagship
+    location grew from a ~$1K opening month to a peak of ~$14.8K/month (Nov 2024) and sustained $6.4–11.2K/month
+    through Sept 2025.
   </div>
 
   <div class="card">
@@ -204,7 +266,7 @@
 
   <div class="card">
     <h2>When customers come in — sales by day &amp; hour</h2>
-    <p class="desc">Lifetime net sales, local time, core operating hours (6am–2pm). Darker = higher sales.</p>
+    <p class="desc">Lifetime net sales, local time, core operating hours (6am–3pm). Darker = higher sales.</p>
     <div class="heatmap" id="heatmap"></div>
     <div class="legend-row" id="heatmapLegend"></div>
   </div>
@@ -230,7 +292,7 @@
 
   <div class="footnote">
     Source: Square Reporting API (Sales &amp; Item Sales views), merchant account for Puente Coffee Co., pulled
-    2026-08-17. "Net sales" excludes tax, tips, and gift-card loads. Square's data floor for this account begins
+    2026-09-12. "Net sales" excludes tax, tips, and gift-card loads. Square's data floor for this account begins
     2024-01-11; no earlier transaction history is available via this API. Figures are unaudited and drawn directly
     from Square reporting, not from accounting records.
   </div>
@@ -238,7 +300,22 @@
 </div>
 
 <script>
-const DATA = {"lifetime": {"net_sales": 192288.73, "total_sales": 239136.07, "order_count": 19754, "avg_order_value": 10.14, "unique_customers": 6242}, "locations": [{"location": "Puente Coffee Co.", "net_sales": 191663.18000000715, "total_sales_amount": 238456.90000000107, "order_count": 19674, "avg_order_value": 10.15153400427, "unique_customers": 6172, "status": "ACTIVE", "type": "Flagship (physical)"}, {"location": "Pop Up Coffee Stand", "net_sales": 625.5500000000001, "total_sales_amount": 679.1699999999997, "order_count": 80, "avg_order_value": 7.819375000000001, "unique_customers": 78, "status": "INACTIVE", "type": "Mobile pilot (Sept 2024 only)"}], "monthly": [{"month": "2024-01", "location": "Puente Coffee Co.", "net_sales": 989.53, "total_sales": 1272.32, "order_count": 151, "avg_order_value": 6.61}, {"month": "2024-02", "location": "Puente Coffee Co.", "net_sales": 4383.82, "total_sales": 5587.66, "order_count": 537, "avg_order_value": 8.43}, {"month": "2024-03", "location": "Puente Coffee Co.", "net_sales": 6570.48, "total_sales": 8292.69, "order_count": 766, "avg_order_value": 8.88}, {"month": "2024-04", "location": "Puente Coffee Co.", "net_sales": 8148.3, "total_sales": 10183.72, "order_count": 922, "avg_order_value": 9.16}, {"month": "2024-05", "location": "Puente Coffee Co.", "net_sales": 7465.82, "total_sales": 9354.83, "order_count": 800, "avg_order_value": 9.91}, {"month": "2024-06", "location": "Puente Coffee Co.", "net_sales": 8255.8, "total_sales": 10203.37, "order_count": 865, "avg_order_value": 10.04}, {"month": "2024-07", "location": "Puente Coffee Co.", "net_sales": 8346.0, "total_sales": 10496.03, "order_count": 879, "avg_order_value": 9.86}, {"month": "2024-08", "location": "Puente Coffee Co.", "net_sales": 8754.81, "total_sales": 10864.13, "order_count": 896, "avg_order_value": 10.13}, {"month": "2024-09", "location": "Puente Coffee Co.", "net_sales": 11439.6, "total_sales": 14215.82, "order_count": 1153, "avg_order_value": 10.34}, {"month": "2024-10", "location": "Puente Coffee Co.", "net_sales": 13479.58, "total_sales": 16687.68, "order_count": 1372, "avg_order_value": 10.13}, {"month": "2024-11", "location": "Puente Coffee Co.", "net_sales": 14830.17, "total_sales": 18375.48, "order_count": 1452, "avg_order_value": 10.63}, {"month": "2024-12", "location": "Puente Coffee Co.", "net_sales": 10736.98, "total_sales": 13460.73, "order_count": 990, "avg_order_value": 11.42}, {"month": "2025-01", "location": "Puente Coffee Co.", "net_sales": 8648.16, "total_sales": 10632.87, "order_count": 857, "avg_order_value": 10.54}, {"month": "2025-02", "location": "Puente Coffee Co.", "net_sales": 7983.33, "total_sales": 9896.4, "order_count": 833, "avg_order_value": 10.04}, {"month": "2025-03", "location": "Puente Coffee Co.", "net_sales": 11219.06, "total_sales": 13813.54, "order_count": 1088, "avg_order_value": 10.72}, {"month": "2025-04", "location": "Puente Coffee Co.", "net_sales": 10848.9, "total_sales": 13528.57, "order_count": 1092, "avg_order_value": 10.39}, {"month": "2025-05", "location": "Puente Coffee Co.", "net_sales": 8749.83, "total_sales": 10855.34, "order_count": 887, "avg_order_value": 10.34}, {"month": "2025-06", "location": "Puente Coffee Co.", "net_sales": 7617.55, "total_sales": 9435.61, "order_count": 772, "avg_order_value": 10.39}, {"month": "2025-07", "location": "Puente Coffee Co.", "net_sales": 7625.86, "total_sales": 9418.18, "order_count": 773, "avg_order_value": 10.28}, {"month": "2025-08", "location": "Puente Coffee Co.", "net_sales": 7494.26, "total_sales": 9257.27, "order_count": 756, "avg_order_value": 10.23}, {"month": "2025-09", "location": "Puente Coffee Co.", "net_sales": 6390.3, "total_sales": 7954.08, "order_count": 680, "avg_order_value": 9.79}, {"month": "2025-10", "location": "Puente Coffee Co.", "net_sales": 381.55, "total_sales": 482.05, "order_count": 64, "avg_order_value": 8.31}, {"month": "2025-11", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2025-12", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 20.0, "order_count": 1, "avg_order_value": 0.0}, {"month": "2026-01", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-02", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-03", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-04", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-05", "location": "Puente Coffee Co.", "net_sales": 0.5, "total_sales": 0.58, "order_count": 1, "avg_order_value": 0.5}, {"month": "2026-06", "location": "Puente Coffee Co.", "net_sales": 3139.6, "total_sales": 3998.45, "order_count": 353, "avg_order_value": 9.2}, {"month": "2026-07", "location": "Puente Coffee Co.", "net_sales": 5750.64, "total_sales": 7154.0, "order_count": 520, "avg_order_value": 11.21}, {"month": "2026-08", "location": "Puente Coffee Co.", "net_sales": 2412.75, "total_sales": 3015.5, "order_count": 214, "avg_order_value": 11.58}], "top_items": [{"item": "Latte", "category": "Espresso", "net_sales": 41731.21, "units": 6698}, {"item": "Iced Latte", "category": "Espresso", "net_sales": 35360.11, "units": 5317}, {"item": "Cold Brew", "category": "Coffee", "net_sales": 9365.28, "units": 1612}, {"item": "Matcha Latte", "category": "Anti-Coffee", "net_sales": 8879.2, "units": 1345}, {"item": "Drip", "category": "Coffee", "net_sales": 8068.51, "units": 2128}, {"item": "Flat White", "category": "Espresso", "net_sales": 7051.96, "units": 1519}, {"item": "Cappuccino", "category": "Espresso", "net_sales": 6719.38, "units": 1391}, {"item": "Americano", "category": "Espresso", "net_sales": 4856.57, "units": 941}, {"item": "Chai Latte", "category": "Anti-Coffee", "net_sales": 4475.53, "units": 665}, {"item": "Iced Americano", "category": "Espresso", "net_sales": 4036.93, "units": 841}, {"item": "Iced Mocha", "category": "Espresso", "net_sales": 3871.02, "units": 583}, {"item": "Cortado", "category": "Espresso", "net_sales": 3688.76, "units": 842}, {"item": "Mocha", "category": "Espresso", "net_sales": 2884.31, "units": 482}, {"item": "Hot Chocolate", "category": "Anti-Coffee", "net_sales": 2465.76, "units": 770}, {"item": "Double Espresso", "category": "Espresso", "net_sales": 2263.9, "units": 604}, {"item": "Pumpkin Spice Latte", "category": "Monthly Specials", "net_sales": 1344.95, "units": 198}, {"item": "Pumpkin Muffins", "category": "Cake Crusader", "net_sales": 1198.0, "units": 301}, {"item": "Lagunitas - Roasted Coffee (12 oz)", "category": "Roasted Coffee", "net_sales": 1091.68, "units": 61}, {"item": "Iced Pumpkin Spice Latte", "category": "Monthly Specials", "net_sales": 991.14, "units": 137}, {"item": "Muffin", "category": "Cake Crusader", "net_sales": 904.26, "units": 225}], "categories": [["Espresso", 113604.74], ["Anti-Coffee", 18338.03], ["Coffee", 17520.99], ["Monthly Specials", 15706.47], ["Roasted Coffee", 8578.71], ["Cake Crusader", 7666.9], ["Coffee Canisters", 4834.7], ["Uncategorized", 2853.58], ["Abby Jane Pastries", 807.9], ["Quacks Pastries", 773.49], ["Kids Menu", 677.0], ["Merch", 560.0], ["Pastry", 385.0], ["Hot Tea", 378.12], ["Pastries", 319.3], ["Snacks", 129.6], ["Easy Tiger Pastries", 60.0], ["Canned and Bottled Drinks", 33.0], ["House Sodas", 16.0]], "daypart": {"days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], "hours": [6, 7, 8, 9, 10, 11, 12, 13, 14], "max": 12928.26, "grid": [{"day": "Monday", "values": [32.0, 2025.13, 4969.77, 6203.57, 3956.84, 2476.45, 360.9, 108.45, 0.0]}, {"day": "Tuesday", "values": [21.15, 1618.21, 4130.07, 4667.29, 2863.49, 1463.22, 119.25, 0.0, 0.0]}, {"day": "Wednesday", "values": [69.3, 2114.06, 5059.33, 4681.82, 2739.67, 1680.9, 55.35, 0.0, 0.0]}, {"day": "Thursday", "values": [36.25, 2416.4, 5702.04, 6767.31, 3950.26, 2193.96, 978.24, 455.6, 19.0]}, {"day": "Friday", "values": [66.39, 2973.3, 9134.91, 7760.39, 5170.65, 2423.93, 1480.48, 1228.22, 0.0]}, {"day": "Saturday", "values": [56.0, 2155.03, 9479.21, 12928.26, 10163.96, 6081.28, 3570.45, 1987.31, 0.0]}, {"day": "Sunday", "values": [0.0, 207.35, 9296.75, 11427.6, 10194.82, 6731.82, 3391.19, 131.25, 0.0]}]}};
+const PASSWORD = '69420';
+
+document.getElementById('passwordForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = document.getElementById('passwordInput');
+  const error = document.getElementById('passwordError');
+  if (input.value === PASSWORD) {
+    document.getElementById('passwordGate').classList.add('hidden');
+  } else {
+    error.textContent = 'Incorrect password.';
+    input.value = '';
+    input.focus();
+  }
+});
+
+const DATA = {"lifetime": {"net_sales": 200768.37, "total_sales": 249722.67, "order_count": 20509, "avg_order_value": 10.19, "unique_customers": 6641}, "locations": [{"location": "Puente Coffee Co.", "net_sales": 200142.82000000752, "total_sales_amount": 249043.50000000192, "order_count": 20429, "avg_order_value": 10.20345734005624, "unique_customers": 6571, "status": "ACTIVE", "type": "Flagship (physical)"}, {"location": "Pop Up Coffee Stand", "net_sales": 625.5499999999998, "total_sales_amount": 679.1700000000002, "order_count": 80, "avg_order_value": 7.819374999999998, "unique_customers": 78, "status": "INACTIVE", "type": "Mobile pilot (Sept 2024 only)"}], "monthly": [{"month": "2024-01", "location": "Puente Coffee Co.", "net_sales": 989.53, "total_sales": 1272.32, "order_count": 151, "avg_order_value": 6.61}, {"month": "2024-02", "location": "Puente Coffee Co.", "net_sales": 4383.82, "total_sales": 5587.66, "order_count": 537, "avg_order_value": 8.43}, {"month": "2024-03", "location": "Puente Coffee Co.", "net_sales": 6570.48, "total_sales": 8292.69, "order_count": 766, "avg_order_value": 8.88}, {"month": "2024-04", "location": "Puente Coffee Co.", "net_sales": 8148.3, "total_sales": 10183.72, "order_count": 922, "avg_order_value": 9.16}, {"month": "2024-05", "location": "Puente Coffee Co.", "net_sales": 7465.82, "total_sales": 9354.83, "order_count": 800, "avg_order_value": 9.91}, {"month": "2024-06", "location": "Puente Coffee Co.", "net_sales": 8255.8, "total_sales": 10203.37, "order_count": 865, "avg_order_value": 10.04}, {"month": "2024-07", "location": "Puente Coffee Co.", "net_sales": 8346.0, "total_sales": 10496.03, "order_count": 879, "avg_order_value": 9.86}, {"month": "2024-08", "location": "Puente Coffee Co.", "net_sales": 8754.81, "total_sales": 10864.13, "order_count": 896, "avg_order_value": 10.13}, {"month": "2024-09", "location": "Puente Coffee Co.", "net_sales": 11439.6, "total_sales": 14215.82, "order_count": 1153, "avg_order_value": 10.34}, {"month": "2024-10", "location": "Puente Coffee Co.", "net_sales": 13479.58, "total_sales": 16687.68, "order_count": 1372, "avg_order_value": 10.13}, {"month": "2024-11", "location": "Puente Coffee Co.", "net_sales": 14830.17, "total_sales": 18375.48, "order_count": 1452, "avg_order_value": 10.63}, {"month": "2024-12", "location": "Puente Coffee Co.", "net_sales": 10736.98, "total_sales": 13460.73, "order_count": 990, "avg_order_value": 11.42}, {"month": "2025-01", "location": "Puente Coffee Co.", "net_sales": 8648.16, "total_sales": 10632.87, "order_count": 857, "avg_order_value": 10.54}, {"month": "2025-02", "location": "Puente Coffee Co.", "net_sales": 7983.33, "total_sales": 9896.4, "order_count": 833, "avg_order_value": 10.04}, {"month": "2025-03", "location": "Puente Coffee Co.", "net_sales": 11219.06, "total_sales": 13813.54, "order_count": 1088, "avg_order_value": 10.72}, {"month": "2025-04", "location": "Puente Coffee Co.", "net_sales": 10848.9, "total_sales": 13528.57, "order_count": 1092, "avg_order_value": 10.39}, {"month": "2025-05", "location": "Puente Coffee Co.", "net_sales": 8749.83, "total_sales": 10855.34, "order_count": 887, "avg_order_value": 10.34}, {"month": "2025-06", "location": "Puente Coffee Co.", "net_sales": 7617.55, "total_sales": 9435.61, "order_count": 772, "avg_order_value": 10.39}, {"month": "2025-07", "location": "Puente Coffee Co.", "net_sales": 7625.86, "total_sales": 9418.18, "order_count": 773, "avg_order_value": 10.28}, {"month": "2025-08", "location": "Puente Coffee Co.", "net_sales": 7494.26, "total_sales": 9257.27, "order_count": 756, "avg_order_value": 10.23}, {"month": "2025-09", "location": "Puente Coffee Co.", "net_sales": 6390.3, "total_sales": 7954.08, "order_count": 680, "avg_order_value": 9.79}, {"month": "2025-10", "location": "Puente Coffee Co.", "net_sales": 381.55, "total_sales": 482.05, "order_count": 64, "avg_order_value": 8.31}, {"month": "2025-11", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2025-12", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 20.0, "order_count": 1, "avg_order_value": 0.0}, {"month": "2026-01", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-02", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-03", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-04", "location": "Puente Coffee Co.", "net_sales": 0.0, "total_sales": 0.0, "order_count": 0, "avg_order_value": 0.0}, {"month": "2026-05", "location": "Puente Coffee Co.", "net_sales": 0.5, "total_sales": 0.58, "order_count": 1, "avg_order_value": 0.5}, {"month": "2026-06", "location": "Puente Coffee Co.", "net_sales": 3139.6, "total_sales": 3998.45, "order_count": 353, "avg_order_value": 9.2}, {"month": "2026-07", "location": "Puente Coffee Co.", "net_sales": 5750.64, "total_sales": 7154.0, "order_count": 520, "avg_order_value": 11.21}, {"month": "2026-08", "location": "Puente Coffee Co.", "net_sales": 6874.76, "total_sales": 8596.88, "order_count": 618, "avg_order_value": 11.47}, {"month": "2026-09", "location": "Puente Coffee Co.", "net_sales": 4017.63, "total_sales": 5005.22, "order_count": 351, "avg_order_value": 11.72}], "top_items": [{"item": "Latte", "category": "Espresso", "net_sales": 42478.36, "units": 6806}, {"item": "Iced Latte", "category": "Espresso", "net_sales": 36438.46, "units": 5472}, {"item": "Cold Brew", "category": "Coffee", "net_sales": 9968.4, "units": 1709}, {"item": "Matcha Latte", "category": "Anti-Coffee", "net_sales": 8879.2, "units": 1345}, {"item": "Drip", "category": "Coffee", "net_sales": 8232.8, "units": 2169}, {"item": "Flat White", "category": "Espresso", "net_sales": 7129.71, "units": 1534}, {"item": "Cappuccino", "category": "Espresso", "net_sales": 6931.67, "units": 1429}, {"item": "Americano", "category": "Espresso", "net_sales": 4902.22, "units": 949}, {"item": "Chai Latte", "category": "Anti-Coffee", "net_sales": 4591.53, "units": 681}, {"item": "Iced Americano", "category": "Espresso", "net_sales": 4102.18, "units": 854}, {"item": "Iced Mocha", "category": "Espresso", "net_sales": 3916.77, "units": 590}, {"item": "Cortado", "category": "Espresso", "net_sales": 3884.01, "units": 886}, {"item": "Mocha", "category": "Espresso", "net_sales": 3038.31, "units": 504}, {"item": "Hot Chocolate", "category": "Anti-Coffee", "net_sales": 2483.51, "units": 775}, {"item": "Double Espresso", "category": "Espresso", "net_sales": 2336.65, "units": 622}, {"item": "Iced Vanilla Latte + Ube Cold Foam", "category": "Monthly Specials", "net_sales": 1588.29, "units": 202}, {"item": "Pumpkin Spice Latte", "category": "Monthly Specials", "net_sales": 1344.95, "units": 198}, {"item": "Pumpkin Muffins", "category": "Cake Crusader", "net_sales": 1198.0, "units": 301}, {"item": "Lagunitas - Roasted Coffee (12 oz)", "category": "Roasted Coffee", "net_sales": 1091.68, "units": 61}, {"item": "Iced Bl-Ube Latte", "category": "Monthly Specials", "net_sales": 891.07, "units": 111}], "categories": [["Espresso", 116319.18], ["Monthly Specials", 19535.76], ["Anti-Coffee", 18722.23], ["Coffee", 18288.4], ["Roasted Coffee", 8995.01], ["Cake Crusader", 7666.9], ["Coffee Canisters", 4834.7], ["Uncategorized", 2953.58], ["Abby Jane Pastries", 807.9], ["Quacks Pastries", 773.49], ["Pastry", 762.0], ["Kids Menu", 680.5], ["Merch", 560.0], ["Hot Tea", 378.12], ["Pastries", 319.3], ["Snacks", 129.6], ["Easy Tiger Pastries", 60.0], ["Canned and Bottled Drinks", 33.0], ["House Sodas", 16.0]], "daypart": {"days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], "hours": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15], "max": 13377.28, "grid": [{"day": "Monday", "values": [32.0, 2155.13, 5134.22, 6493.47, 4194.44, 2558.45, 360.9, 108.45, 0.0, 0.0]}, {"day": "Tuesday", "values": [21.15, 1698.46, 4345.47, 4797.85, 2987.64, 1498.72, 119.25, 0.0, 0.0, 0.0]}, {"day": "Wednesday", "values": [69.3, 2191.31, 5313.98, 4811.52, 2854.42, 1720.35, 55.35, 0.0, 0.0, 0.0]}, {"day": "Thursday", "values": [36.25, 2573.03, 5861.79, 7049.26, 4101.26, 2267.65, 1028.78, 510.05, 19.0, 9.0]}, {"day": "Friday", "values": [66.39, 3227.3, 9409.84, 8219.28, 5345.2, 2561.83, 1612.68, 1341.22, 14.0, 0.0]}, {"day": "Saturday", "values": [56.0, 2381.58, 9905.79, 13377.28, 10645.66, 6322.84, 3888.45, 2140.06, 0.0, 0.0]}, {"day": "Sunday", "values": [0.0, 207.35, 9537.08, 11966.32, 10631.12, 6909.07, 3468.88, 171.1, 63.5, 30.75]}]}};
 
 function css(varName) {
   return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
@@ -259,13 +336,15 @@ function destroyCharts() { charts.forEach(c => c.destroy()); charts = []; }
 
 function renderKPIs() {
   const L = DATA.lifetime;
-  const years = (32 / 12).toFixed(1);
+  const monthCount = DATA.monthly.length;
+  const years = (monthCount / 12).toFixed(1);
+  const firstMonth = DATA.monthly[0].month, lastMonth = DATA.monthly[monthCount - 1].month;
   const kpis = [
     { label: 'Lifetime net sales', value: fmtUSD(L.net_sales), sub: 'All locations, since Jan 2024' },
     { label: 'Total orders', value: L.order_count.toLocaleString(), sub: 'All locations' },
     { label: 'Unique customers', value: L.unique_customers.toLocaleString(), sub: 'Distinct visitors on record' },
     { label: 'Avg order value', value: fmtUSD(L.avg_order_value, 2), sub: 'Top-line, per order' },
-    { label: 'Track record', value: '~2.7 yrs', sub: 'Jan 2024 – Aug 2026 (incl. closure)' },
+    { label: 'Track record', value: `~${years} yrs`, sub: `${firstMonth} – ${lastMonth} (incl. closure)` },
   ];
   document.getElementById('kpiRow').innerHTML = kpis.map(k => `
     <div class="kpi">
@@ -410,6 +489,8 @@ function seqColor(v, max) {
 function renderHeatmap() {
   const { days, hours, max, grid } = DATA.daypart;
   const hourLabel = h => { const hr = h % 12 === 0 ? 12 : h % 12; const ap = h < 12 ? 'a' : 'p'; return hr + ap; };
+  const labelColWidth = window.innerWidth <= 760 ? 50 : 70;
+  document.getElementById('heatmap').style.gridTemplateColumns = `${labelColWidth}px repeat(${hours.length}, 1fr)`;
   let html = `<div class="corner"></div>`;
   hours.forEach(h => html += `<div class="hourlabel">${hourLabel(h)}</div>`);
   grid.forEach(row => {
